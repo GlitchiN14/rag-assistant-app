@@ -1,0 +1,25 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Secrets / local config
+.env
+*.log
+
+# Raw document corpus (see README for download links)
+data/raw_pdfs/*
+!data/raw_pdfs/.gitkeep
+
+# Vector store: small stores (< ~50 MB) may be committed so the backend works
+# right after cloning. If yours is large, uncomment the next line and explain
+# in the README how to rebuild it with the notebook.
+# backend/data/vector_store/chroma/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
