@@ -41,8 +41,12 @@ def query(
     question = payload.question.strip()
     logger.info("Question: %s", question)
 
-    chunks = retriever.retrieve(question, k=settings.top_k, max_distance=settings.max_distance)
-    if not chunks:  # nothing relevant enough -> refuse without calling the LLM
+    # Retrieve the top-k chunks (nearest first). Gate on the BEST chunk only: if even the
+    # closest passage is farther than MAX_DISTANCE, nothing relevant exists -> refuse without
+    # calling the LLM. Otherwise ALL top-k chunks are used as context (filtering the weaker
+    # chunks too would starve list-style questions of context).
+    chunks = retriever.retrieve(question, k=settings.top_k)
+    if not chunks or chunks[0].distance > settings.max_distance:
         return QueryResponse(answer=REFUSAL, sources=[])
 
     try:

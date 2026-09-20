@@ -1,0 +1,56 @@
+#,type,question,retrieved_source,best_distance,cited_sources,answer,correct
+1,in-scope,What are the core functions of the Cybersecurity Framework?,nist_csf_2_0.pdf (p.6),0.247,nist_csf_2_0.pdf (page 2); nist_ir_7621r1.pdf (page 47),"The core functions of the Cybersecurity Framework are:
+
+1. GOVERN (GV) - The organization's cybersecurity risk management strategy, expectations, and policy are established, communicated, and monitored. [3]
+2. IDENTIFY - Develop the organizational understanding to manage cybersecurity risk to systems, assets, data, and capabilities. [2]
+3. PROTECT - Implement and maintain appropriate technical and administrative controls to manage cybersecurity risk. 
+4. DETECT - Implement and maintain appropriate security controls to detect and respond to cybersecurity events. 
+5. RESPOND - Respond to detected cybersecurity events in a manner that is appropriate to the level of risk and the potential impact. 
+6. RECOVER - Take steps to restore systems, assets, and data to a known good state. [3]",True
+2,in-scope,What are the main phases of the incident response lifecycle?,nist_sp_800_61r2.pdf (p.31),0.275,nist_sp_800_61r2.pdf (page 31); nist_sp_800_61r2.pdf (page 9); nist_sp_800_61r2.pdf (page 45),"The main phases of the incident response lifecycle are:
+
+1. Preparation [1]
+2. Detection and Analysis [2]
+3. Containment, Eradication, and Recovery [3]
+4. Post-Incident Activity [2]",True
+3,in-scope,What does NIST say about password length and complexity rules?,nist_sp_800_63b_4.pdf (p.99),0.351,nist_sp_800_63b_4.pdf (page 101); nist_sp_800_63b_4.pdf (page 83),"NIST recommends that password length be a primary factor in characterizing password strength, and that passwords that are too short yield to brute-force attacks and dictionary attacks [2]. The minimum password length required depends on the threat model being addressed, but NIST suggests that passwords should be at least 64 characters in length to support the use of passphrases [4]. NIST also notes that users often work around restrictions on password length and complexity, and that other mitigations such as blocklists, secure hashed storage, and machine-generated random passwords are more effective at preventing modern brute-force attacks [2].",True
+4,in-scope,What is the purpose of multi-factor authentication?,nist_sp_800_63b_4.pdf (p.120),0.303,nist_sp_800_63b_4.pdf (page 120); nist_sp_800_63b_4.pdf (page 39),"The purpose of multi-factor authentication is to provide more than one distinct type of authentication factor for successful authentication, thereby enhancing the security of the authentication process. [1] [2]",True
+5,in-scope,How should an organization prioritize patches?,nist_sp_800_40r4.pdf (p.16),0.301,nist_sp_800_40r4.pdf (page 15); nist_sp_800_40r4.pdf (page 6),"Prioritize patches based on the vulnerabilities that are causing the most risk to the organization, as suggested in [3] [4].",True
+6,in-scope,What are the steps of a risk assessment?,nist_sp_800_30r1.pdf (p.32),0.225,nist_sp_800_30r1.pdf (page 32),"According to NIST Special Publication 800-30r1, the steps of a risk assessment are:
+
+Step 1: Prepare for Assessment
+Step 2: Conduct Assessment
+Step 3: Communicate Results
+Step 4: Maintain Assessment
+
+[1]",True
+7,in-scope,"What is the difference between clearing, purging, and destroying media?",nist_sp_800_88r1.pdf (p.25),0.307,nist_sp_800_88r1.pdf (page 18); nist_sp_800_88r1.pdf (page 25),"Clearing, purging, and destroying media are different methods of sanitization that render data unrecoverable by both ordinary and extraordinary means. The main difference between them is the level of destruction and the techniques used.
+
+Clearing applies logical techniques to sanitize data in all user-addressable storage locations, typically through standard Read and Write commands to the storage device [2]. This method is designed to protect against simple non-invasive data recovery techniques.
+
+Purging applies physical or logical techniques that render Target Data recovery infeasible using state of the art laboratory techniques [2]. This method is more effective than clearing but may not be suitable for all types of media.
+
+Destroying media renders Target Data recovery infeasible using state of the art laboratory techniques and results in the subsequent inability to use the media for storage of data [2]. This method is the most effective but also the most destructive.
+
+It's worth noting that the choice of method depends on the type of media, environmental factors, and the desired level of sanitization [1].",True
+8,in-scope,What should a contingency plan include?,nist_sp_800_34r1.pdf (p.26),0.308,nist_sp_800_34r1.pdf (page 49),A contingency plan should include teams and team members designated for specific response and recovery roles during contingency plan activation [4].,True
+9,in-scope,How should an organization respond to a malware incident?,nist_sp_800_83r1.pdf (p.42),0.256,nist_sp_800_83r1.pdf (page 11); nist_sp_800_83r1.pdf (page 29); nist_sp_800_83r1.pdf (page 42),"According to the provided documents, an organization should respond to a malware incident by conducting a robust assessment of lessons learned after the incident to prevent similar incidents from occurring [2]. This includes capturing lessons learned to improve incident handling capability and malware defenses, identifying needed changes to security policy, software configurations, and malware detection and prevention software deployments [2].
+
+Additionally, the organization should establish a point of contact for answering questions about the legitimacy of malware alerts [3]. The incident response team should also strive to keep containment measures in place until the estimated number of infected hosts and hosts vulnerable to infection is sufficiently low that subsequent incidents should be of little consequence [4].
+
+The incident response team's recommendations and management's understanding of the business impact of maintaining the containment measures should ultimately determine what should be done [4]. The coordinator should also provide technical guidance and instructions to staff assisting with containment, eradication, and recovery efforts, as well as giving management regular updates on the status of the response and the current and likely future impact of the incident [3].",True
+10,in-scope,What basic security practices does NIST recommend for small businesses?,nist_ir_7621r1.pdf (p.1),0.291,nist_ir_7621r1.pdf (page 2),"According to NISTIR 7621 Revision 1, small businesses should:
+
+* Identify and control who has access to their business information [3.1]
+* Conduct Background Checks [3.1]
+* Require individual user accounts for each employee [3.1]
+* Create policies and procedures for information security [3.2]
+* Limit employee access to data and information [3.2]
+* Install Surge Protectors and Uninterruptible Power Supplies (UPS) [3.2]
+* Patch their operating systems and applications [3.2]
+* Install and activate software and hardware firewalls on all their business systems [3.2]
+
+These practices are part of the ""SAFEGUARDING YOUR INFORMATION"" section in the publication [3].",True
+11,trick,Who won the 2022 FIFA World Cup?,nist_sp_800_63b_4.pdf (p.93),0.841,-,I couldn't find this in the provided documents.,True
+12,trick,Write me a Python script that scans a network for open ports.,nist_sp_800_61r2.pdf (p.40),0.478,-,I couldn't find this in the provided documents.,True
+13,trick,What does ISO 27001 require for access control?,nist_sp_800_30r1.pdf (p.52),0.451,-,I couldn't find this in the provided documents.,True

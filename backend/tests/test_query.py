@@ -47,7 +47,9 @@ def test_query_invalid_input_returns_422(client):
 
 
 def test_query_no_relevant_chunks_refuses_without_llm():
-    app.dependency_overrides[get_retriever] = lambda: FakeRetriever(chunks=[])
+    # The closest chunk is very far away (distance 0.99) -> out of scope -> refuse.
+    far = [Chunk(text="unrelated", source="x.pdf", page=1, distance=0.99)]
+    app.dependency_overrides[get_retriever] = lambda: FakeRetriever(chunks=far)
     app.dependency_overrides[get_generator] = lambda: None  # must never be called
     try:
         response = TestClient(app).post("/query", json={"question": "Who won the World Cup?"})

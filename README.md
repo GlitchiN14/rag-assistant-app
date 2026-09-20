@@ -37,7 +37,7 @@ flowchart LR
     end
 ```
 
-**Grounding safeguards:** strict system prompt ("use ONLY the context, otherwise refuse") · low temperature (0.1) · cosine-distance threshold that skips the LLM entirely when nothing relevant is retrieved · numbered context chunks `[1]`, `[2]` that the model must cite.
+**Grounding safeguards:** strict system prompt ("use ONLY the context, otherwise refuse") · low temperature (0.1) · cosine-distance threshold that skips the LLM entirely when even the best-matching passage is too far away · numbered context chunks `[1]`, `[2]` that the model must cite.
 
 ## Tech stack
 
@@ -87,6 +87,8 @@ rag-assistant-project/
 
 **Domain:** cybersecurity guidance from the U.S. National Institute of Standards and Technology (NIST). These are free public-domain PDFs with real, specific answers (frameworks, lifecycle phases, requirements), so grounded answers are easy to verify.
 
+**Corpus:** 9 documents, 679 pages, split into **2,454 chunks** (1000 characters, 200 overlap). All PDFs were text-extractable (no OCR needed).
+
 The raw PDFs are **not committed** to this repo (large files). Download them into `data/raw_pdfs/`, either automatically with `python scripts/download_pdfs.py`, or manually from the table below **using exactly these filenames** (they appear in the citations):
 
 | Save as | Publication | Link |
@@ -109,7 +111,7 @@ The raw PDFs are **not committed** to this repo (large files). Download them int
 
 ### 1. Clone and create a virtual environment
 ```bash
-git clone https://github.com/<your-username>/rag-assistant-app.git
+git clone https://github.com/GlitchiN14/rag-assistant-app.git
 cd rag-assistant-app
 python -m venv .venv
 .venv\Scripts\activate            # Windows
@@ -160,7 +162,7 @@ Open <http://localhost:8501> and ask a question.
 | `TEMPERATURE` | `0.1` | Low = fewer hallucinations |
 | `VECTOR_STORE_DIR` | `data/vector_store` | Folder exported by the notebook |
 | `TOP_K` | `4` | Chunks retrieved per question |
-| `MAX_DISTANCE` | `0.65` | Chunks farther than this (cosine distance) count as irrelevant |
+| `MAX_DISTANCE` | `0.40` | If the best-matching chunk is farther than this (cosine distance), the question is treated as out of scope and refused without calling the LLM |
 | `CORS_ORIGINS` | `http://localhost:8501,http://127.0.0.1:8501` | Allowed frontend origins |
 | `LOG_LEVEL` | `INFO` | Logging level |
 
@@ -175,7 +177,7 @@ Open <http://localhost:8501> and ask a question.
 ### `GET /health`
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","vector_store_loaded":true,"chunks":1234}
+# {"status":"ok","vector_store_loaded":true,"chunks":2454}
 ```
 
 ### `POST /query`
@@ -186,7 +188,7 @@ curl -X POST http://localhost:8000/query \
   -H "Content-Type: application/json" \
   -d '{"question": "What are the core functions of the NIST Cybersecurity Framework?"}'
 ```
-Response:
+Example response (illustrative — your exact wording will differ):
 ```json
 {
   "answer": "The CSF 2.0 core has six functions: Govern, Identify, Protect, Detect, Respond and Recover [1].",
@@ -202,26 +204,49 @@ Response:
 
 ## Evaluation results
 
-<!-- After running the notebook, paste the table from docs/evaluation_results.md here
-     and fill in the summary + failure cases below. -->
+10 in-scope questions and 3 out-of-scope "trick" questions, run in `notebooks/rag_pipeline.ipynb` (section 2.6). Full answers are in the notebook and in [`docs/evaluation_results.csv`](docs/evaluation_results.csv). Verdicts below are from reading each answer by hand (the notebook's automatic keyword check marks every row correct, which is too generous).
 
-*Results of the 10 in-scope + 3 out-of-scope test questions from `notebooks/rag_pipeline.ipynb` (section 2.6). Full table with answers: [`docs/evaluation_results.csv`](docs/evaluation_results.csv).*
+| # | Question | Retrieved source (top hit) | Best distance | Verdict |
+|---|---|---|---|---|
+| 1 | What are the core functions of the Cybersecurity Framework? | nist_csf_2_0.pdf (p.6) | 0.247 | ✅ all six functions listed |
+| 2 | What are the main phases of the incident response lifecycle? | nist_sp_800_61r2.pdf (p.31) | 0.275 | ✅ |
+| 3 | What does NIST say about password length and complexity rules? | nist_sp_800_63b_4.pdf (p.99) | 0.351 | ❌ gave 64 characters as the *minimum* |
+| 4 | What is the purpose of multi-factor authentication? | nist_sp_800_63b_4.pdf (p.120) | 0.303 | ✅ |
+| 5 | How should an organization prioritize patches? | nist_sp_800_40r4.pdf (p.16) | 0.301 | ⚠️ correct but very thin |
+| 6 | What are the steps of a risk assessment? | nist_sp_800_30r1.pdf (p.32) | 0.225 | ✅ |
+| 7 | What is the difference between clearing, purging, and destroying media? | nist_sp_800_88r1.pdf (p.25) | 0.307 | ✅ |
+| 8 | What should a contingency plan include? | nist_sp_800_34r1.pdf (p.26) | 0.308 | ⚠️ incomplete (one element) |
+| 9 | How should an organization respond to a malware incident? | nist_sp_800_83r1.pdf (p.42) | 0.256 | ⚠️ grounded but unfocused |
+| 10 | What basic security practices does NIST recommend for small businesses? | nist_ir_7621r1.pdf (p.1) | 0.291 | ⚠️ plausible, malformed citation tags |
+| 11 | Who won the 2022 FIFA World Cup? *(trick)* | nist_sp_800_63b_4.pdf (p.93) | 0.841 | ✅ refused |
+| 12 | Write me a Python script that scans a network for open ports. *(trick)* | nist_sp_800_61r2.pdf (p.40) | 0.478 | ✅ refused |
+| 13 | What does ISO 27001 require for access control? *(trick)* | nist_sp_800_30r1.pdf (p.52) | 0.451 | ✅ refused |
 
-| # | Question | Retrieved source | Correct |
-|---|---|---|---|
-| … | *(paste from `docs/evaluation_results.md`)* | … | … |
+**Summary:** of the 10 in-scope questions, **5 were fully correct, 4 partially correct (thin, incomplete or badly cited) and 1 wrong**. Retrieval itself was strong: the right document was the top hit for all 10 (distances 0.22–0.35). **All 3 out-of-scope questions were refused.**
 
-**Summary:** *X/10 in-scope questions answered correctly and grounded; 3/3 out-of-scope questions correctly refused.*
+**Choosing `MAX_DISTANCE`:** in-scope questions scored 0.225–0.351 and out-of-scope ones 0.451–0.841, so the cutoff is **0.40**. The evaluation run itself used 0.65, where only the World Cup question was stopped by the threshold and the other two out-of-scope questions reached the LLM, which happened to refuse on its own. At 0.40 all three are refused before the LLM is called. (Tuned on only 13 questions — treat it as a starting point.)
 
-**Main failure cases & mitigations:** *(write 3–4 sentences: e.g. tables extracting badly, neighbouring documents retrieved, citation format drift, and how the distance threshold / prompt / chunking mitigated them).*
+**Main failure cases and mitigations:**
+
+- **Wrong number (Q3):** the 3B model mixed two neighbouring statements and presented 64 characters as a minimum length; in SP 800-63B-4 it is the length verifiers should *allow*. Not fixed.
+- **Thin or incomplete answers (Q5, Q8, Q9):** four 1000-character chunks are too little context for list-style "what should X include" questions. Next things to try: larger `top_k` or chunk size, or a bigger model.
+- **Cross-document contamination (Q1):** a chunk from NISTIR 7621 was cited alongside CSF 2.0, so some function descriptions don't match CSF 2.0 wording (the list itself is right).
+- **Citation drift (Q10):** the model wrote `[3.1]` instead of `[n]`; the backend ignores invalid tags and falls back to listing all retrieved chunks so `sources` is always populated.
+- **Noisy chunks:** cover pages can match a query by title (Q10's top hit was page 1), and the overlap starts mid-word in many chunks. Cosmetic; not fixed.
 
 ## Screenshots
 
-<!-- Save screenshots in docs/screenshots/ and reference them like this: -->
-<!-- ![Chat answer with sources](docs/screenshots/chat.png) -->
-<!-- ![Swagger UI](docs/screenshots/swagger.png) -->
+| Cited answer | Out-of-scope refusal |
+|---|---|
+| ![Chat answer with sources](docs/screenshots/chat.png) | ![Refusal](docs/screenshots/refusal.png) |
 
-*(add: the chat UI showing a cited answer, a refusal on an out-of-scope question, and the Swagger `/docs` page)*
+![Swagger UI](docs/screenshots/swagger.png)
+
+## Limitations
+
+- Runs locally with a small 3B model, so answers can be thin or occasionally wrong (see the failure cases above). Always check important details in the cited page.
+- Only text is indexed: tables extract poorly and figures are ignored (Core Track, no OCR or vision).
+- The distance cutoff was tuned on a small set of 13 questions.
 
 ## Tests
 
@@ -229,7 +254,7 @@ Response:
 cd backend
 pytest -q
 ```
-The tests replace the retriever/generator with fakes, so they need neither Ollama nor the vector store. They cover the happy path, invalid input (422), the "nothing relevant → refuse without calling the LLM" path, and `/health`.
+The tests replace the retriever/generator with fakes, so they need neither Ollama nor the vector store. They cover the happy path, invalid input (422), the "best chunk too far away → refuse without calling the LLM" path, and `/health`.
 
 ## Docker (optional)
 
@@ -247,5 +272,5 @@ The vector store (`backend/data/vector_store/`) must exist before building the i
 | Backend fails at startup with "Vector store not found" | Run the notebook first (step 3) so `backend/data/vector_store/` is populated |
 | `/query` returns 503 | Start Ollama and run `ollama pull llama3.2:3b` |
 | Frontend shows "Backend offline" | Start the backend and check `API_BASE_URL` in `frontend/.env` |
-| Everything gets refused | `MAX_DISTANCE` is too strict — raise it slightly (tune it in the notebook) |
+| Good questions get refused | `MAX_DISTANCE` in `backend/.env` is too strict — raise it slightly (e.g. 0.45) and restart the backend |
 | A PDF has almost no text | It's a scan and needs OCR — replace it with a text-based PDF |

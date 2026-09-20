@@ -1,0 +1,23 @@
+{
+  "embedding_model": "all-MiniLM-L6-v2",
+  "collection_name": "nist_docs",
+  "distance_metric": "cosine",
+  "chunk_size": 1000,
+  "chunk_overlap": 200,
+  "top_k": 4,
+  "max_distance": 0.65,
+  "ollama_model": "llama3.2:3b",
+  "num_documents": 9,
+  "num_chunks": 2454,
+  "documents": [
+    "nist_csf_2_0.pdf",
+    "nist_ir_7621r1.pdf",
+    "nist_sp_800_30r1.pdf",
+    "nist_sp_800_34r1.pdf",
+    "nist_sp_800_40r4.pdf",
+    "nist_sp_800_61r2.pdf",
+    "nist_sp_800_63b_4.pdf",
+    "nist_sp_800_83r1.pdf",
+    "nist_sp_800_88r1.pdf"
+  ]
+}

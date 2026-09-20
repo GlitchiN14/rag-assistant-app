@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # Retrieval
     vector_store_dir: str = "data/vector_store"
     top_k: int = 4
-    max_distance: float = 0.65
+    max_distance: float = 0.40
 
     # CORS (comma-separated)
     cors_origins: str = "http://localhost:8501,http://127.0.0.1:8501"
